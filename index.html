@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nepal — Language Speakers Video Archive</title>
+<style>
+  :root{
+    --bg:#f7f5f2; --card:#ffffff; --ink:#1c1a17; --muted:#6b655c;
+    --line:#e2ddd5; --accent:#b4472a; --accent-soft:#f6e6e0;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;
+  }
+  header{
+    padding:28px 20px 14px; max-width:1200px; margin:0 auto;
+  }
+  header h1{margin:0 0 4px; font-size:1.6rem; letter-spacing:-.01em}
+  header p{margin:0; color:var(--muted); font-size:.92rem}
+
+  nav{
+    position:sticky; top:0; z-index:10; background:rgba(247,245,242,.94);
+    backdrop-filter:blur(8px); border-bottom:1px solid var(--line);
+  }
+  .tabs{
+    max-width:1200px; margin:0 auto; padding:8px 12px;
+    display:flex; gap:6px; overflow-x:auto; scrollbar-width:thin;
+  }
+  .tab{
+    flex:0 0 auto; border:1px solid transparent; background:transparent;
+    color:var(--muted); font:inherit; font-size:.9rem; font-weight:600;
+    padding:8px 14px; border-radius:999px; cursor:pointer; white-space:nowrap;
+    transition:.15s;
+  }
+  .tab:hover{background:#efeae3; color:var(--ink)}
+  .tab[aria-selected="true"]{
+    background:var(--accent); color:#fff; border-color:var(--accent);
+  }
+  .tab .count{
+    font-weight:500; opacity:.7; margin-left:6px; font-variant-numeric:tabular-nums;
+  }
+
+  main{max-width:1200px; margin:0 auto; padding:22px 20px 80px}
+
+  .fam-head h2{margin:0 0 6px; font-size:1.25rem}
+  .fam-head p{margin:0 0 10px; color:var(--muted); max-width:70ch; font-size:.94rem}
+  .chips{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:18px}
+  .chip{
+    font-size:.78rem; color:var(--muted); background:#efeae3;
+    border-radius:999px; padding:3px 10px;
+  }
+
+  .toolbar{margin-bottom:18px}
+  .toolbar input{
+    width:100%; max-width:340px; padding:9px 13px; font:inherit; font-size:.9rem;
+    border:1px solid var(--line); border-radius:10px; background:var(--card);
+    color:var(--ink);
+  }
+  .toolbar input:focus{outline:2px solid var(--accent-soft); border-color:var(--accent)}
+
+  .grid{
+    display:grid; gap:20px;
+    grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));
+  }
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    overflow:hidden; display:flex; flex-direction:column;
+    box-shadow:0 1px 2px rgba(0,0,0,.03);
+  }
+  .frame{position:relative; aspect-ratio:16/9; background:#111}
+  .frame iframe, .frame video{
+    position:absolute; inset:0; width:100%; height:100%; border:0; display:block;
+  }
+  .placeholder{
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:4px; text-align:center;
+    color:#c9c4bc; font-size:.85rem; background:#26221e; padding:12px;
+  }
+  .placeholder span{font-size:.75rem; opacity:.65}
+  .meta{padding:13px 15px 16px}
+  .meta h3{margin:0 0 4px; font-size:1rem; line-height:1.3}
+  .lang{
+    margin:0 0 6px; font-size:.76rem; font-weight:700; letter-spacing:.05em;
+    text-transform:uppercase; color:var(--accent);
+  }
+  .speaker{margin:0; font-size:.87rem; color:var(--ink)}
+  .notes{margin:6px 0 0; font-size:.83rem; color:var(--muted)}
+
+  .empty{
+    border:1px dashed var(--line); border-radius:14px; padding:40px 24px;
+    text-align:center; color:var(--muted); background:var(--card);
+  }
+  .empty code{
+    background:#efeae3; padding:2px 6px; border-radius:6px; font-size:.85em;
+  }
+  .empty h3{color:var(--ink); margin:0 0 8px; font-size:1rem}
+  .empty p{margin:0 auto; max-width:52ch; font-size:.9rem}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Nepal — Language Speakers</h1>
+  <p>A personal archive of video recordings of speakers, organised by language family.</p>
+</header>
+
+<nav><div class="tabs" id="tabs" role="tablist"></div></nav>
+
+<main>
+  <div class="fam-head" id="famHead"></div>
+  <div class="toolbar"><input id="search" type="search" placeholder="Filter by language, speaker, title…"></div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<script>
+/* ==========================================================================
+   HOW TO ADD A VIDEO
+   --------------------------------------------------------------------------
+   Find the block for the right family below (FAMILIES) and add an object to
+   its `videos` array. Minimum you need is `title` and `url`.
+
+   {
+     title:   "A short descriptive title",
+     language:"Thakali",
+     speaker: "Name, place, year (optional)",
+     url:     "https://www.youtube.com/watch?v=XXXXXXXXXXX",   // or youtu.be/…,
+              // or a full <iframe> embed code (the src is extracted for you),
+              // or a local file path like "videos/thakali.mp4"
+     notes:   "Anything you want to remember (optional)"
+   }
+
+   Just paste a normal YouTube/Vimeo link — it gets converted to an embed
+   automatically. Remember the trailing comma between objects.
+   ========================================================================== */
+
+const FAMILIES = [
+  {
+    id: "indo-european",
+    name: "Indo-European",
+    desc: "The largest family in Nepal by number of speakers — Nepali and the various languages of the Tarai plains, plus several smaller hill languages.",
+    languages: ["Nepali","Maithili","Bhojpuri","Awadhi","Tharu","Doteli","Bajjika","Urdu","Bengali","Hindi","Marwari","Danuwar","Darai","Kumhali"],
+        videos: [
+      {
+        title: "WIKITONGUES: Sanjana speaking Nepali",
+        language: "Nepali",
+        url: "https://youtu.be/PWVzPFUgHEo"
+      }
+    ]
+  },
+  {
+    id: "trans-himalayan",
+    name: "Trans-Himalayan",
+    desc: "Also called Sino-Tibetan. The great family of the middle hills and high mountains — from Newar in the Kathmandu Valley to the Rai, Limbu, Tamang, Gurung and Sherpa languages of the east and north.",
+    languages: ["Tamang","Newah","Magar","Gurung","Rai","Limbu","Sherpa","Tibetan","Thakali","Manange","Sunwar","Chepang","Dhimal","Thangmi","Baram","Lepcha","Kagate"],
+    videos: []
+  },
+  {
+    id: "austro-asiatic",
+    name: "Austro-Asiatic",
+    desc: "A small but old presence in Nepal, represented mainly by Munda languages spoken in the eastern Tarai.",
+    languages: ["Santali","Mundari","Kharia","Ho","Sora"],
+    videos: []
+  },
+  {
+    id: "dravidian",
+    name: "Dravidian",
+    desc: "Nepal's Dravidian speakers are few and scattered — mostly Kurux and Malto communities in the eastern lowlands.",
+    languages: ["Kurux (Kurukh)","Malto","Dhangar / Jhangar"],
+    videos: []
+  },
+  {
+    id: "kusunda",
+    name: "Kusunda (isolate)",
+    desc: "A language isolate with no known relatives, spoken by a handful of people in western Nepal. Every recording matters.",
+    languages: ["Kusunda"],
+    videos: []
+  }
+];
+
+/* ------------------------------------------------------------------ code */
+
+const tabsEl  = document.getElementById("tabs");
+const headEl  = document.getElementById("famHead");
+const gridEl  = document.getElementById("grid");
+const searchEl= document.getElementById("search");
+
+let query = "";
+
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c =>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* Accepts a watch URL, short URL, embed URL, iframe code, or direct media
+   URL and returns something that can go in a src attribute. */
+function toEmbed(raw){
+  if(!raw) return null;
+  let url = String(raw).trim();
+
+  // Full iframe embed code -> pull out the src
+  if(/<iframe/i.test(url)){
+    const m = url.match(/src=["']([^"']+)["']/i);
+    if(m) url = m[1];
+  }
+
+    let m;
+  if((m = url.match(/(?:youtube(?:-nocookie)?\.com\/embed\/)([\w-]{11})/)))  return "https://www.youtube.com/embed/" + m[1];
+  if((m = url.match(/youtu\.be\/([\w-]{11})/)))                              return "https://www.youtube.com/embed/" + m[1];
+  if((m = url.match(/[?&]v=([\w-]{11})/)))                                   return "https://www.youtube.com/embed/" + m[1];
+  if((m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/)))                       return "https://player.vimeo.com/video/" + m[1];
+  if(/^https?:\/\//i.test(url) || /^file:\/\//i.test(url))                   return url;
+  return null;
+}
+
+function mediaHTML(v){
+  const src = toEmbed(v.url);
+  if(!src){
+    return `<div class="placeholder">No video linked yet
+              <span>Add a URL in the FAMILIES data block</span>
+            </div>`;
+  }
+  if(/\.(mp4|webm|ogv|ogg|mov|m4v)(\?|#|$)/i.test(src)){
+    return `<video controls preload="metadata" src="${esc(src)}"></video>`;
+  }
+  return `<iframe src="${esc(src)}" title="${esc(v.title || "video")}"
+            loading="lazy" allowfullscreen
+            referrerpolicy="strict-origin-when-cross-origin"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+          </iframe>`;
+}
+
+function cardHTML(v){
+  const bits = [];
+  if(v.speaker) bits.push(`<p class="speaker">${esc(v.speaker)}</p>`);
+  if(v.notes)   bits.push(`<p class="notes">${esc(v.notes)}</p>`);
+  return `<article class="card">
+    <div class="frame">${mediaHTML(v)}</div>
+    <div class="meta">
+      ${v.language ? `<p class="lang">${esc(v.language)}</p>` : ""}
+      <h3>${esc(v.title || "Untitled recording")}</h3>
+      ${bits.join("")}
+      ${v.url ? `<p class="notes"><a href="${esc(v.url)}" target="_blank" rel="noopener">Watch on YouTube ↗</a></p>` : ""}
+    </div>
+  </article>`;
+}
+
+function currentFamily(){
+  const id = location.hash.replace(/^#/, "");
+  return FAMILIES.find(f => f.id === id) || FAMILIES[0];
+}
+
+function renderTabs(active){
+  tabsEl.innerHTML = FAMILIES.map(f => `
+    <button class="tab" role="tab" data-id="${f.id}"
+            aria-selected="${f.id === active.id}">
+      ${esc(f.name)}<span class="count">${f.videos.length}</span>
+    </button>`).join("");
+}
+
+function renderHead(fam){
+  headEl.innerHTML = `
+    <h2>${esc(fam.name)}</h2>
+    <p>${esc(fam.desc)}</p>
+    <div class="chips">${fam.languages.map(l => `<span class="chip">${esc(l)}</span>`).join("")}</div>`;
+}
+
+function renderGrid(fam){
+  const q = query.trim().toLowerCase();
+  const list = q
+    ? fam.videos.filter(v =>
+        [v.title, v.language, v.speaker, v.notes]
+          .join(" ").toLowerCase().includes(q))
+    : fam.videos;
+
+  if(!list.length){
+    gridEl.innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <h3>${fam.videos.length ? "Nothing matches that filter" : "No videos here yet"}</h3>
+      <p>${fam.videos.length
+        ? "Try a different search term."
+        : `Open this file in a text editor, find the <code>${esc(fam.id)}</code> block in <code>FAMILIES</code>, and add an object to its <code>videos</code> array.`}</p>
+    </div>`;
+    return;
+  }
+  gridEl.innerHTML = list.map(cardHTML).join("");
+}
+
+function render(){
+  const fam = currentFamily();
+  renderTabs(fam);
+  renderHead(fam);
+  renderGrid(fam);
+}
+
+tabsEl.addEventListener("click", e => {
+  const btn = e.target.closest(".tab");
+  if(!btn) return;
+  location.hash = btn.dataset.id;
+});
+
+searchEl.addEventListener("input", () => {
+  query = searchEl.value;
+  renderGrid(currentFamily());
+});
+
+window.addEventListener("hashchange", () => { query = ""; searchEl.value = ""; render(); });
+
+render();
+</script>
+</body>
+</html>
