@@ -147,7 +147,7 @@ const FAMILIES = [
       {
         title: "WIKITONGUES: Sanjana speaking Nepali",
         language: "Nepali",
-        url: "https://youtu.be/PWVzPFUgHEo"
+        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
       }
     ]
   },
@@ -205,10 +205,10 @@ function toEmbed(raw){
     if(m) url = m[1];
   }
 
-    let m;
+   let m;
   if((m = url.match(/(?:youtube(?:-nocookie)?\.com\/embed\/)([\w-]{11})/)))  return "https://www.youtube-nocookie.com/embed/" + m[1];
   if((m = url.match(/youtu\.be\/([\w-]{11})/)))                              return "https://www.youtube-nocookie.com/embed/" + m[1];
-  if((m = url.match(/[?&]v=([\w-]{11})/)))                                   return "https://www.youtube-nocookie.com/embed/" + m[1];                                 return "https://www.youtube.com/embed/" + m[1];
+  if((m = url.match(/[?&]v=([\w-]{11})/)))                                   return "https://www.youtube-nocookie.com/embed/" + m[1];
   if((m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/)))                       return "https://player.vimeo.com/video/" + m[1];
   if(/^https?:\/\//i.test(url) || /^file:\/\//i.test(url))                   return url;
   return null;
